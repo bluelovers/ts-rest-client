@@ -1,51 +1,83 @@
-
 // tslint:disable:ban-types
 import { HttpMethod, HttpRequestOptions } from './http-request-options';
 import { HttpService } from './http-service';
 import { NamedValues, StringMap } from './named-values';
-import "reflect-metadata";
-import { resolve as url_resolve } from 'url';
+import 'reflect-metadata';
+import {
+  EnumRestClientMetadata,
+  SymbolBaseUrl,
+  SymbolDefaultHeaders,
+  SymbolHttpClient,
+  SymbolRequestInterceptor, urlNormalize,
+  urlResolve,
+  Observable
+} from './util';
+import { IAxiosRequestConfig } from './axios';
 
 interface Parameter {
   key: string;
   parameterIndex: number;
 }
 
+type UnpackRequestOptions<H extends HttpService> = H extends HttpService<infer U> ? U : IAxiosRequestConfig
+
 /**
  * An interceptor is a function that takes the prepared HTTP request data and returns them modified.
  */
-export type HttpRequestInterceptor = <T extends HttpRequestOptions, U>(request: T) => U;
+export type HttpRequestInterceptor<H extends HttpService> = <T extends HttpRequestOptions>(request: T) => UnpackRequestOptions<H> | any;
+
+export interface IRestClientOptions<H extends HttpService>
+{
+  httpClient: H;
+  requestInterceptor?: HttpRequestInterceptor<H>;
+}
 
 /**
  * Abstract base class for the REST clients.
  */
-export abstract class RestClient {
-  protected httpClient: HttpService;
-
-  constructor(httpClient: HttpService) {
-    this.httpClient = httpClient;
-    this.requestInterceptor = null;
-  }
+export abstract class RestClient<H extends HttpService = HttpService> {
+  readonly [SymbolHttpClient]: H;
 
   /**
    * Request interceptor allowing to modifiy the collected request data before sending it.
    * Typical use is the insertion of an authorization token to the request headers.
    * Leave null if you don't want to use it.
    */
-  protected requestInterceptor: HttpRequestInterceptor | null;
+  protected [SymbolRequestInterceptor]: HttpRequestInterceptor<H> = null;
+
+  constructor(options: IRestClientOptions<H>) {
+    this[SymbolHttpClient] = options.httpClient;
+    this[SymbolRequestInterceptor] = options.requestInterceptor || null;
+  }
+
+  get $baseURL(): string
+  {
+    return this[SymbolBaseUrl]()
+  }
+
+  get $http()
+  {
+    return this[SymbolHttpClient]
+  }
+
+  $request<T>(options: UnpackRequestOptions<H>): Observable<T>
+  {
+    return this[SymbolHttpClient].request<T>(options)
+  }
 
   /**
    * Returns the base of the REST API URL.
    */
-  protected getBaseUrl(): string | null {
-    return null;
+  [SymbolBaseUrl](): string
+  {
+    return Reflect.getMetadata(EnumRestClientMetadata.BASE_URL, Reflect.getPrototypeOf(this)) || null;
   }
 
   /**
    * Returns the default HTTP headers attached to each request.
    */
-  protected getDefaultHeaders(): StringMap | null {
-    return null;
+  [SymbolDefaultHeaders](): StringMap {
+    return Reflect.getMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, Reflect.getPrototypeOf(this)) || null;
   }
 }
 
@@ -54,11 +86,10 @@ export abstract class RestClient {
  * Intended to use as a decorator: @DefaultHeaders({'Header': 'value', 'Header2': 'value'}
  * @param headers   The headers in key-value pairs.
  */
-export function DefaultHeaders(headers: StringMap): any {
-  return function <TFunc extends Function>(Target: TFunc): TFunc {
-    Target.prototype.getDefaultHeaders = function(): StringMap {
-      return headers;
-    };
+export function DefaultHeaders(headers: StringMap) {
+  return function (Target: any) {
+
+    setClassMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, headers, Target);
 
     return Target;
   };
@@ -69,31 +100,18 @@ export function DefaultHeaders(headers: StringMap): any {
  * Intended to use as a decorator: @BaseUrl("http://...")
  * @param url   the base URL.
  */
-export function BaseUrl(url: string): any {
-  return function <TFunc extends Function>(Target: TFunc): TFunc {
-    Target.prototype.getBaseUrl = function(): any {
-      return url;
-    };
+export function BaseUrl(url: string | URL) {
+  return function (Target: any) {
+    setClassMetadata(EnumRestClientMetadata.BASE_URL, urlNormalize(url), Target);
     return Target;
   };
 }
 
-export const enum EnumRestClientMetadata
+export function setClassMetadata(metadataKey: string, metadataValue: any, target: object & {
+  prototype?: any;
+})
 {
-  PARAM_PATH = 'Path',
-  PARAM_QUERY = 'Query',
-  PARAM_BODY = 'Body',
-  PARAM_HEADER = 'Header',
-
-  METHOD = 'METHOD',
-
-  METHOD_GET = 'GET',
-  METHOD_POST = 'POST',
-  METHOD_PUT = 'PUT',
-  METHOD_PATCH = 'PATCH',
-  METHOD_DELETE = 'DELETE',
-  METHOD_HEAD = 'HEAD',
-
+  Reflect.defineMetadata(metadataKey, metadataValue, target.prototype);
 }
 
 export type IEnumRestClientMetadataParam = EnumRestClientMetadata.PARAM_PATH | EnumRestClientMetadata.PARAM_QUERY | EnumRestClientMetadata.PARAM_BODY | EnumRestClientMetadata.PARAM_HEADER
@@ -112,18 +130,21 @@ export interface IRestClientMethodMetadataReturn
   [EnumRestClientMetadata.PARAM_HEADER]: Parameter[],
 
   [EnumRestClientMetadata.METHOD]: IEnumRestClientMetadataMethod,
+
+  [EnumRestClientMetadata.BASE_URL]: string,
+  [EnumRestClientMetadata.DEFAULT_HEADERS]: StringMap,
 }
 
 export function getRestClientMethodMetadata<K extends IEnumRestClientMetadataParam, RC extends RestClient = RestClient>(metadataKey: K, target: RC, propertyKey: symbol | string): IRestClientMethodMetadataReturn[K]
-export function getRestClientMethodMetadata<T extends any, RC extends RestClient = RestClient>(metadataKey: IEnumRestClientMetadataExclude, target: RC, propertyKey: symbol | string): T
+export function getRestClientMethodMetadata<T extends unknown, RC extends RestClient = RestClient>(metadataKey: IEnumRestClientMetadataExclude, target: RC, propertyKey: symbol | string): T
 export function getRestClientMethodMetadata<T extends any, RC extends RestClient = RestClient>(metadataKey: EnumRestClientMetadata, target: RC, propertyKey: symbol | string): T
 {
   return Reflect.getMetadata(metadataKey, target, propertyKey as any);
 }
 
 export function setRestClientMethodMetadata<K extends IEnumRestClientMetadataParam, RC extends RestClient>(metadataKey: K, target: RC, propertyKey: symbol | string, metadataValue: IRestClientMethodMetadataReturn[K]): void
-export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: IEnumRestClientMetadataExclude, target: RC, propertyKey: symbol | string, metadataValue): void
-export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: EnumRestClientMetadata, target: RC, propertyKey: symbol | string, metadataValue)
+export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: IEnumRestClientMetadataExclude, target: RC, propertyKey: symbol | string, metadataValue: any): void
+export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: EnumRestClientMetadata, target: RC, propertyKey: symbol | string, metadataValue: any)
 {
   return Reflect.defineMetadata(metadataKey, metadataValue, target, propertyKey as any);
 }
@@ -212,6 +233,8 @@ export function methodBuilder(method: HttpMethod) {
           body = JSON.stringify(args[pBody[0].parameterIndex]);
         }
 
+        const self: RC = this;
+
         let resUrl: string = url;
         if (pPath) {
           for (const k in pPath) {
@@ -234,13 +257,16 @@ export function methodBuilder(method: HttpMethod) {
               params.set(key, value);
             });
         }
-
-        const headers = new NamedValues(this.getDefaultHeaders());
-        for (const k in descriptor.headers) {
-          if (descriptor.headers.hasOwnProperty(k)) {
-            headers.set(k, descriptor.headers[k]);
+        const headers = new NamedValues(self[SymbolDefaultHeaders]());
+        if (descriptor.headers) {
+          for (const k in descriptor.headers) {
+            if (descriptor.headers.hasOwnProperty(k)) {
+              // @ts-ignore
+              headers.set(k, descriptor.headers[k]);
+            }
           }
         }
+
         if (pHeader) {
           for (const k in pHeader) {
             if (pHeader.hasOwnProperty(k)) {
@@ -248,28 +274,47 @@ export function methodBuilder(method: HttpMethod) {
             }
           }
         }
-
-        const finalUrl = url_resolve(this.getBaseUrl(), resUrl);
-        let request = new HttpRequestOptions(finalUrl, method, body, headers, params);
-        if (this.requestInterceptor) {
-          request = this.requestInterceptor(request);
+        const finalUrl = urlResolve( resUrl, self[SymbolBaseUrl]());
+        let request: IAxiosRequestConfig | HttpRequestOptions = new HttpRequestOptions(finalUrl, method, body, headers, params);
+        if (this[SymbolRequestInterceptor]) {
+          request = this[SymbolRequestInterceptor](request);
         }
 
-        // @ts-ignore
+        if (request instanceof HttpRequestOptions)
+        {
+          // @ts-ignore
+          request = request.toValue() as IAxiosRequestConfig
+        }
+
         const oldTransformResponse = request.transformResponse;
 
-        // @ts-ignore
-        request.transformResponse = function (data)
+        let newTransformRespons = function (data: any)
         {
-          let ret = oldFn(oldTransformResponse ? oldTransformResponse.call(this, data) : data);
+          let ret = oldFn.call(self, data);
+
           if (ret == null)
           {
             return data;
           }
+
           return ret;
         };
 
-        return (this.httpClient as HttpService).request(request);
+        if (!Array.isArray(oldTransformResponse))
+        {
+          if (!oldTransformResponse)
+          {
+            request.transformResponse = [];
+          }
+          else
+          {
+            request.transformResponse = [oldTransformResponse];
+          }
+        }
+
+        (request.transformResponse as any[]).push(newTransformRespons);
+
+        return self.$http.request(request);
       };
     };
   };

@@ -1,4 +1,5 @@
-import { Observable, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { Observable } from './util';
 
 import { HttpErrorResponse } from './http-error-response';
 import { HttpRequestOptions } from './http-request-options';

@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from './util';
 import { HttpRequestOptions } from './http-request-options';
 import { HttpService } from './http-service';
 import { StringMap } from './named-values';

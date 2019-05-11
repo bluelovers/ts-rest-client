@@ -17,8 +17,8 @@ import {
   POST,
   PUT,
   Query,
-  RestClient,
-} from './rest-client';
+  RestClient, } from './rest-client';
+import { SymbolDefaultHeaders, SymbolRequestInterceptor } from './util';
 
 const baseUrl = 'http://example.org/api';
 
@@ -38,25 +38,27 @@ const additionalHeaders = {
 
 @BaseUrl(baseUrl)
 @DefaultHeaders(defaultHeaders)
-class TestingRestClient extends RestClient {
-  get baseUrl(): string | null {
-    return this.getBaseUrl();
+class TestingRestClient extends RestClient<MockHttpService> {
+  get baseUrl() {
+    return this.$baseURL;
   }
 
-  get defaultHeaders(): StringMap | null {
-    return this.getDefaultHeaders();
+  get defaultHeaders() {
+    return this[SymbolDefaultHeaders]();
   }
 
-  get mockService(): MockHttpService {
-    return this.httpClient as MockHttpService;
+  get mockService() {
+    return this.$http;
   }
 
   constructor() {
-    super(new MockHttpService());
+    super({
+      httpClient: new MockHttpService(),
+    });
   }
 
-  setRequestInterceptor(interceptor: HttpRequestInterceptor) {
-    this.requestInterceptor = interceptor;
+  setRequestInterceptor(interceptor: HttpRequestInterceptor<MockHttpService>) {
+    this[SymbolRequestInterceptor] = interceptor;
   }
 
   @GET('/test-get')

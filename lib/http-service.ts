@@ -1,6 +1,5 @@
-import { Observable } from 'rxjs';
-
-import { HttpRequestOptions } from './http-request-options';
+import { Observable } from './util';
+import { AxiosRequestConfig } from 'lib/axios';
 
 /**
  * Generic interface of an HTTP service capable of sending a request and return the response as an RxJs Observable.
@@ -8,10 +7,10 @@ import { HttpRequestOptions } from './http-request-options';
  * In case of an error the observable has to throw an HttpErrorResponse.
  * @see HttpErrorResponse
  */
-export interface HttpService {
+export interface HttpService<O extends AxiosRequestConfig = AxiosRequestConfig> {
   /**
    * Performs an HTTP Request.
    * @param options request data
    */
-  request(options: HttpRequestOptions): Observable<any>;
+  request<T>(options: O): Observable<T>;
 }

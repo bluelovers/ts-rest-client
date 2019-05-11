@@ -1,5 +1,6 @@
 import { NamedValues } from './named-values';
 import { IEnumRestClientMetadataMethod } from './rest-client';
+import { standardQueryEncoding } from './util';
 
 /** HTTP Method to be used in the request. */
 export type HttpMethod = IEnumRestClientMetadataMethod;
@@ -19,7 +20,7 @@ export class HttpRequestOptions
 		readonly method: HttpMethod,
 		readonly body: any = null,
 		readonly headers: NamedValues = null,
-		readonly params: NamedValues = null,
+		readonly params: NamedValues<Record<string, any>> = null,
 	)
 	{
 		const empty = new NamedValues();
@@ -107,7 +108,3 @@ export class HttpRequestOptions
 	}
 }
 
-function standardQueryEncoding(v: string): string
-{
-	return encodeURIComponent(v);
-}

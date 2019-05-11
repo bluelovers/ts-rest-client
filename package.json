@@ -33,17 +33,19 @@
     "test:watch": "npm run test -- --watch"
   },
   "dependencies": {
-    "reflect-metadata": "^0.1.13"
+    "axios": "^0.18.0",
+    "axios-cache-adapter": "^2.3.0",
+    "axios-observable": "^1.0.7",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.5.2",
+    "rxjs-compat": "^6.5.2"
   },
   "devDependencies": {
     "@bluelovers/tsconfig": "^1.0.3",
     "@types/jest": "^24.0.12",
     "coveralls": "^3.0.3",
     "jest": "^24.8.0",
-    "rxjs": "^6.4.0",
     "ts-jest": "^24.0.2"
   },
-  "peerDependencies": {
-    "rxjs": "~6.5.2"
-  }
+  "peerDependencies": {}
 }

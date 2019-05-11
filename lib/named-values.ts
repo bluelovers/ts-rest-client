@@ -1,8 +1,8 @@
 /**
  * Typed interface for an object holding string values associated to string keys.
  */
-export interface StringMap {
-  [key: string]: string;
+export interface StringMap<T extends any = string> {
+  [key: string]: T;
 }
 
 /**

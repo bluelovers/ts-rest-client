@@ -15,14 +15,14 @@ export declare class HttpRequestOptions {
     readonly method: HttpMethod;
     readonly body: any;
     readonly headers: NamedValues;
-    readonly params: NamedValues;
-    constructor(url: string, method: HttpMethod, body?: any, headers?: NamedValues, params?: NamedValues);
+    readonly params: NamedValues<Record<string, any>>;
+    constructor(url: string, method: HttpMethod, body?: any, headers?: NamedValues, params?: NamedValues<Record<string, any>>);
     toValue(): {
         url: string;
         method: IEnumRestClientMetadataMethod;
         body: any;
-        headers: import("./named-values").StringMap;
-        params: import("./named-values").StringMap;
+        headers: import("./named-values").StringMap<string>;
+        params: Record<string, any>;
     };
     /**
      * Detects the content type from the request body.
