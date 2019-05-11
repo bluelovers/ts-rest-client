@@ -8,8 +8,8 @@ export interface StringMap {
 /**
  * A simple collection of named string values.
  */
-export class NamedValues {
-  values: StringMap;
+export class NamedValues<T extends StringMap = StringMap> {
+  values: T;
 
   get length(): number {
     return Object.keys(this.values).length;
@@ -19,8 +19,18 @@ export class NamedValues {
    * Initializes a new named values collection.
    * @param initializer key-value pairs to initialize the collection with
    */
-  constructor(initializer?: StringMap) {
-    this.values = { ...(initializer || {}) };
+  constructor(initializer?: T) {
+    if (initializer instanceof NamedValues)
+    {
+      this.values = {
+        ...initializer.values
+      }
+    }
+    else
+    {
+      // @ts-ignore
+      this.values = { ...(initializer || {}) };
+    }
   }
 
   /**
@@ -53,6 +63,17 @@ export class NamedValues {
    * @param value The value
    */
   set(key: string, value: string) {
+    // @ts-ignore
     this.values[key] = value;
+  }
+
+  toValue()
+  {
+    return this.values
+  }
+
+  [Symbol.toPrimitive]()
+  {
+    return this.values
   }
 }
