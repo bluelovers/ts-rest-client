@@ -1,5 +1,5 @@
 {
-  "name": "ts-rest-client",
+  "name": "ts-rest-client2",
   "version": "1.1.1",
   "description": "Simple way to create REST API clients",
   "keywords": [
@@ -41,8 +41,7 @@
     "coveralls": "^3.0.3",
     "jest": "^24.8.0",
     "rxjs": "^6.4.0",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.4.5"
+    "ts-jest": "^24.0.2"
   },
   "peerDependencies": {
     "rxjs": "~6.5.2"
