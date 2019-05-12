@@ -13,9 +13,10 @@ import {
 } from './util';
 import { IAxiosRequestConfig, IAxiosObservable as Observable } from './axios';
 
-interface Parameter {
+interface Parameter<T = any> {
   key: string;
   parameterIndex: number;
+  defaultValue?: T
 }
 
 export type UnpackRequestOptions<H extends HttpService> = H extends HttpService<infer U> ? U : IAxiosRequestConfig
@@ -161,12 +162,13 @@ export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: 
 }
 
 function paramBuilder(paramName: IEnumRestClientMetadataParam) {
-  return function(key: string) {
+  return function<D extends any>(key: string, defaultValue?: D) {
     return function<RC extends RestClient>(target: RC, propertyKey: symbol | string, parameterIndex: number) {
       //const metadataKey = `${String(propertyKey)}_${paramName}_parameters`;
-      const paramObj: Parameter = {
+      const paramObj: Parameter<D> = {
         key,
         parameterIndex,
+        defaultValue,
       };
 
       let arr = getRestClientMethodMetadata(paramName, target, propertyKey);
@@ -250,7 +252,15 @@ export function methodBuilder(method: HttpMethod) {
         if (pPath) {
           for (const k in pPath) {
             if (pPath.hasOwnProperty(k)) {
-              resUrl = resUrl.replace('{' + pPath[k].key + '}', args[pPath[k].parameterIndex]);
+
+              let value = args[pPath[k].parameterIndex];
+
+              if (typeof value === 'undefined' && typeof pPath[k].defaultValue !== 'undefined')
+              {
+                value = pPath[k].defaultValue;
+              }
+
+              resUrl = resUrl.replace('{' + pPath[k].key + '}', value);
             }
           }
         }

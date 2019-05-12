@@ -4,9 +4,10 @@ import { NamedValues, StringMap } from './named-values';
 import 'reflect-metadata';
 import { EnumRestClientMetadata, SymbolBaseUrl, SymbolDefaultHeaders, SymbolHttpClient, SymbolRequestInterceptor } from './util';
 import { IAxiosRequestConfig, IAxiosObservable as Observable } from './axios';
-interface Parameter {
+interface Parameter<T = any> {
     key: string;
     parameterIndex: number;
+    defaultValue?: T;
 }
 export declare type UnpackRequestOptions<H extends HttpService> = H extends HttpService<infer U> ? U : IAxiosRequestConfig;
 /**
@@ -79,12 +80,12 @@ export declare function setRestClientMethodMetadata<RC extends RestClient>(metad
  * Path variable of a method's URL, type: string.
  * @param key   path key to bind value.
  */
-export declare const Path: (key: string) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
+export declare const Path: <D extends any>(key: string, defaultValue?: D) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
 /**
  * Query value of a method's URL, type: string.
  * @param key   query key to bind value.
  */
-export declare const Query: (key: string) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
+export declare const Query: <D extends any>(key: string, defaultValue?: D) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
 /**
  * Body of a REST method, type: key-value pair object.
  * Only one body per method!
@@ -94,7 +95,7 @@ export declare const Body: <RC extends RestClient<HttpService<IAxiosRequestConfi
  * Custom header of a REST method, type: string.
  * @param key   header key to bind value.
  */
-export declare const Header: (key: string) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
+export declare const Header: <D extends any>(key: string, defaultValue?: D) => <RC extends RestClient<HttpService<IAxiosRequestConfig>>>(target: RC, propertyKey: string | symbol, parameterIndex: number) => void;
 export interface IRestClientMethodDescriptor<T extends Function, SM extends StringMap = StringMap> extends TypedPropertyDescriptor<T> {
     headers?: NamedValues<SM>;
 }
