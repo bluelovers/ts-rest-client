@@ -3,8 +3,10 @@
  */
 import 'reflect-metadata';
 import Bluebird = require('bluebird');
-import { AxiosObservable } from 'axios-observable/dist/axios-observable.interface';
-export { AxiosObservable as Observable } from 'axios-observable/dist/axios-observable.interface';
+import { IAxiosObservable } from './axios';
+import { Observer, PartialObserver } from 'rxjs';
+import Rxjs = require('rxjs');
+export { Observer, PartialObserver };
 export declare type IBluebird = typeof Bluebird;
 export declare function urlNormalize(input: string | URL): string;
 export declare function urlResolve(input: string, base?: string | URL): string;
@@ -30,4 +32,9 @@ export declare const SymbolDefaultHeaders: unique symbol;
 export declare const SymbolHttpClient: unique symbol;
 export declare const SymbolRequestInterceptor: unique symbol;
 export declare function standardQueryEncoding(v: string): string;
-export declare function subscribeObservable<T extends AxiosObservable<any>>(ob: T): Bluebird<import("rxjs").Subscription>;
+export declare function createObserver<T, E extends Error | any = Error>(observer?: PartialObserver<T>, log?: Console): Observer<T>;
+export declare type IUnpackObservableData<T extends Rxjs.Observable<any>> = T extends IAxiosObservable<infer U> ? U : T extends Rxjs.Observable<infer U> ? U : unknown;
+export declare function subscribeObservable<T extends Rxjs.Observable<any>>(ob: T): Rxjs.Subscription;
+export declare function resolveObservable<T extends Rxjs.Observable<any>>(ob: T): Bluebird<Rxjs.Subscription>;
+declare const _default: typeof import("./util");
+export default _default;

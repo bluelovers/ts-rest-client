@@ -77,3 +77,5 @@ export class NamedValues<T extends StringMap = StringMap> {
     return this.values
   }
 }
+
+export default NamedValues;

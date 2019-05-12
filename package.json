@@ -29,7 +29,7 @@
     "ncu": "npx npm-check-updates -u",
     "prepublishOnly": "npm test && npm run lint",
     "sort-package-json": "npx sort-package-json ./package.json",
-    "test": "jest --config jestconfig.json",
+    "test": "jest --config ./jestconfig.json",
     "test:watch": "npm run test -- --watch"
   },
   "dependencies": {

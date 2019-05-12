@@ -5,7 +5,7 @@ import { StringMap } from './named-values';
  * If the request failed on client side, error is to be filled with an Event object describing what happened.
  */
 export declare class HttpErrorResponse implements Error {
-    readonly error: any | null;
+    readonly error: any | null | Error;
     readonly headers: StringMap;
     readonly message: string;
     readonly name = "HttpErrorResponse";
@@ -21,3 +21,4 @@ export declare class HttpErrorResponse implements Error {
         url?: string;
     });
 }
+export default HttpErrorResponse;

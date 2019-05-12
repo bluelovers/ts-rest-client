@@ -37,3 +37,4 @@ export declare class HttpRequestOptions {
      */
     getUrl(): string;
 }
+export default HttpRequestOptions;

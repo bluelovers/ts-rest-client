@@ -10,16 +10,15 @@ import {
   SymbolHttpClient,
   SymbolRequestInterceptor, urlNormalize,
   urlResolve,
-  Observable
 } from './util';
-import { IAxiosRequestConfig } from './axios';
+import { IAxiosRequestConfig, IAxiosObservable as Observable } from './axios';
 
 interface Parameter {
   key: string;
   parameterIndex: number;
 }
 
-type UnpackRequestOptions<H extends HttpService> = H extends HttpService<infer U> ? U : IAxiosRequestConfig
+export type UnpackRequestOptions<H extends HttpService> = H extends HttpService<infer U> ? U : IAxiosRequestConfig
 
 /**
  * An interceptor is a function that takes the prepared HTTP request data and returns them modified.
@@ -70,14 +69,14 @@ export abstract class RestClient<H extends HttpService = HttpService> {
    */
   [SymbolBaseUrl](): string
   {
-    return Reflect.getMetadata(EnumRestClientMetadata.BASE_URL, Reflect.getPrototypeOf(this)) || null;
+    return getThisTypeMetadata(EnumRestClientMetadata.BASE_URL, this) || null;
   }
 
   /**
    * Returns the default HTTP headers attached to each request.
    */
   [SymbolDefaultHeaders](): StringMap {
-    return Reflect.getMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, Reflect.getPrototypeOf(this)) || null;
+    return getThisTypeMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, this) || null;
   }
 }
 
@@ -107,9 +106,21 @@ export function BaseUrl(url: string | URL) {
   };
 }
 
-export function setClassMetadata(metadataKey: string, metadataValue: any, target: object & {
-  prototype?: any;
-})
+export function getThisTypeMetadata(metadataKey: string, target: ThisType<any>)
+{
+  return Reflect.getMetadata(metadataKey, Reflect.getPrototypeOf(target))
+}
+
+export type IClassWithPrototype<T extends object = object> = object & {
+  prototype: T;
+}
+
+export function getClassMetadata(metadataKey: string, target: IClassWithPrototype)
+{
+  return Reflect.getMetadata(metadataKey, target.prototype)
+}
+
+export function setClassMetadata(metadataKey: string, metadataValue: any, target: IClassWithPrototype)
 {
   Reflect.defineMetadata(metadataKey, metadataValue, target.prototype);
 }
@@ -355,3 +366,5 @@ export const DELETE = methodBuilder(EnumRestClientMetadata.METHOD_DELETE);
  * @param url   resource URL of the method
  */
 export const HEAD = methodBuilder(EnumRestClientMetadata.METHOD_HEAD);
+
+export default RestClient

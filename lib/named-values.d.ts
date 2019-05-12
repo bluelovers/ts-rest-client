@@ -39,3 +39,4 @@ export declare class NamedValues<T extends StringMap = StringMap> {
     toValue(): T;
     [Symbol.toPrimitive](): T;
 }
+export default NamedValues;

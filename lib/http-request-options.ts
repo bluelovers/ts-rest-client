@@ -108,3 +108,4 @@ export class HttpRequestOptions
 	}
 }
 
+export default HttpRequestOptions

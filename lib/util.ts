@@ -6,8 +6,11 @@ import 'reflect-metadata';
 import { resolve as _url_resolve } from 'url';
 import Bluebird = require('bluebird');
 import util = require('util');
-import { AxiosObservable } from 'axios-observable/dist/axios-observable.interface';
-export { AxiosObservable as Observable } from 'axios-observable/dist/axios-observable.interface';
+import { IAxiosObservable } from './axios';
+import { Observer, PartialObserver } from 'rxjs';
+import Rxjs = require('rxjs');
+
+export { Observer, PartialObserver }
 
 export type IBluebird = typeof Bluebird;
 
@@ -74,25 +77,41 @@ export function standardQueryEncoding(v: string): string
 	return encodeURIComponent(v);
 }
 
-export function subscribeObservable<T extends AxiosObservable<any>>(ob: T)
+export function createObserver<T, E extends Error | any = Error>(observer?: PartialObserver<T>, log = console): Observer<T>
+{
+	return {
+		next(data: T)
+		{
+			log.debug('Next: %s', util.inspect(data));
+		},
+		error(err: E)
+		{
+			log.debug('Error: %s', util.inspect(err));
+		},
+		complete()
+		{
+			log.debug('Completed');
+		},
+		...observer,
+	}
+}
+
+export type IUnpackObservableData<T extends Rxjs.Observable<any>> =
+	T extends IAxiosObservable<infer U> ? U
+	: T extends Rxjs.Observable<infer U> ? U
+		: unknown
+;
+
+export function subscribeObservable<T extends Rxjs.Observable<any>>(ob: T)
+{
+	return ob.subscribe(createObserver<IUnpackObservableData<T>>());
+}
+
+export function resolveObservable<T extends Rxjs.Observable<any>>(ob: T)
 {
 	return Bluebird.resolve(ob)
-		//.tap(r => console.dir(r))
-		.then(function (ob)
-		{
-			return ob.subscribe(function (x)
-				{
-					console.log('Next: %s', util.inspect(x.data));
-				},
-				function (err)
-				{
-					console.log('Error: %s', util.inspect(err));
-				},
-				function ()
-				{
-					console.log('Completed');
-				}
-			)
-		})
+		.then(subscribeObservable)
 		;
 }
+
+export default exports as typeof import('./util');

@@ -1,4 +1,4 @@
-import { Observable } from './util';
+import { IAxiosObservable as Observable } from './axios';
 import { HttpRequestOptions } from './http-request-options';
 import { HttpService } from './http-service';
 import { StringMap } from './named-values';
@@ -37,3 +37,4 @@ export declare class MockHttpService implements HttpService {
     offline(): void;
     request(options: HttpRequestOptions): Observable<any>;
 }
+export default MockHttpService;

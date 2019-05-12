@@ -19,7 +19,7 @@ export interface IRequestConfig extends IAxiosRequestConfig
 export { IAxiosObservable, IAxiosRequestConfig, Axios, setupCache }
 
 export type IRestClientAxiosOptions<T extends Axios = Axios> = IRestClientOptions<T> & {
-	config?: IRequestConfig,
+	configAxios?: IRequestConfig,
 };
 
 export abstract class RestClientAxios<T extends Axios = Axios> extends RestClient<T>
@@ -27,7 +27,7 @@ export abstract class RestClientAxios<T extends Axios = Axios> extends RestClien
 	constructor(opts: Partial<IRestClientAxiosOptions<T>> = {})
 	{
 		// @ts-ignore
-		opts.httpClient = opts.httpClient || createAxios(opts.config);
+		opts.httpClient = opts.httpClient || createAxios(opts.configAxios);
 
 		super(opts as IRestClientAxiosOptions<T>);
 	}
@@ -77,3 +77,5 @@ export function createAxios(config: IRequestConfig = {})
 
 	return Axios.create(config)
 }
+
+export default RestClientAxios

@@ -6,7 +6,7 @@ import { StringMap } from './named-values';
  * If the request failed on client side, error is to be filled with an Event object describing what happened.
  */
 export class HttpErrorResponse implements Error {
-  readonly error: any | null;
+  readonly error: any | null | Error;
   readonly headers: StringMap;
   readonly message: string;
   readonly name = 'HttpErrorResponse';
@@ -32,3 +32,5 @@ export class HttpErrorResponse implements Error {
     this.error = data.error || null;
   }
 }
+
+export default HttpErrorResponse

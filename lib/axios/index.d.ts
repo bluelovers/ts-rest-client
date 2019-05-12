@@ -12,7 +12,7 @@ export interface IRequestConfig extends IAxiosRequestConfig {
 }
 export { IAxiosObservable, IAxiosRequestConfig, Axios, setupCache };
 export declare type IRestClientAxiosOptions<T extends Axios = Axios> = IRestClientOptions<T> & {
-    config?: IRequestConfig;
+    configAxios?: IRequestConfig;
 };
 export declare abstract class RestClientAxios<T extends Axios = Axios> extends RestClient<T> {
     constructor(opts?: Partial<IRestClientAxiosOptions<T>>);
@@ -21,3 +21,4 @@ export declare namespace RestClientAxios {
     type Observable<T> = IAxiosObservable<T>;
 }
 export declare function createAxios(config?: IRequestConfig): Axios;
+export default RestClientAxios;

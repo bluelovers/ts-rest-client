@@ -1,5 +1,5 @@
 import { of, throwError } from 'rxjs';
-import { Observable } from './util';
+import { IAxiosObservable as Observable } from './axios';
 
 import { HttpErrorResponse } from './http-error-response';
 import { HttpRequestOptions } from './http-request-options';
@@ -108,3 +108,5 @@ export class MockHttpService implements HttpService {
     }));
   }
 }
+
+export default MockHttpService
