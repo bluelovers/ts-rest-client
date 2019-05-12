@@ -4,10 +4,11 @@
 export interface StringMap<T extends any = string> {
     [key: string]: T;
 }
+export declare type UnpackStringMap<T> = T extends Record<string, infer U> ? U : any;
 /**
  * A simple collection of named string values.
  */
-export declare class NamedValues<T extends StringMap = StringMap> {
+export declare class NamedValues<T extends StringMap<any> = StringMap> {
     values: T;
     readonly length: number;
     /**
@@ -24,7 +25,8 @@ export declare class NamedValues<T extends StringMap = StringMap> {
      * Gets the value associated with a given key.
      * @param key The name of the value that is being looked up.
      */
-    get(key: string): string;
+    get<U extends keyof T>(key: U): T[U];
+    get(key: string): UnpackStringMap<T>;
     /**
      * Removed the value associated with a given key from the collection.
      * @param key The name of the value to be deleted.
@@ -35,7 +37,8 @@ export declare class NamedValues<T extends StringMap = StringMap> {
      * @param key String key that names the value
      * @param value The value
      */
-    set(key: string, value: string): void;
+    set<U extends keyof T>(key: U, value: T[U] | UnpackStringMap<T>): void;
+    set(key: string, value: UnpackStringMap<T>): void;
     toValue(): T;
     [Symbol.toPrimitive](): T;
 }

@@ -1,5 +1,5 @@
 // tslint:disable:ban-types
-import { HttpMethod, HttpRequestOptions } from './http-request-options';
+import { HttpMethod, HttpRequestOptions, IHttpRequestHeaders } from './http-request-options';
 import { HttpService } from './http-service';
 import { NamedValues, StringMap } from './named-values';
 import 'reflect-metadata';
@@ -76,7 +76,7 @@ export abstract class RestClient<H extends HttpService = HttpService> {
   /**
    * Returns the default HTTP headers attached to each request.
    */
-  [SymbolDefaultHeaders](): StringMap {
+  [SymbolDefaultHeaders](): IHttpRequestHeaders {
     return getThisTypeMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, this) || null;
   }
 }
@@ -86,7 +86,7 @@ export abstract class RestClient<H extends HttpService = HttpService> {
  * Intended to use as a decorator: @DefaultHeaders({'Header': 'value', 'Header2': 'value'}
  * @param headers   The headers in key-value pairs.
  */
-export function DefaultHeaders(headers: StringMap) {
+export function DefaultHeaders(headers: IHttpRequestHeaders) {
   return function (Target: any) {
 
     setClassMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, headers, Target);
@@ -257,7 +257,15 @@ export function methodBuilder(method: HttpMethod) {
 
               if (typeof value === 'undefined' && typeof pPath[k].defaultValue !== 'undefined')
               {
-                value = pPath[k].defaultValue;
+              	let defaultValue = pPath[k].defaultValue;
+              	if (typeof defaultValue === 'function')
+								{
+									value = defaultValue();
+								}
+              	else
+								{
+									value = defaultValue;
+								}
               }
 
               resUrl = resUrl.replace('{' + pPath[k].key + '}', value);
@@ -334,6 +342,8 @@ export function methodBuilder(method: HttpMethod) {
         }
 
         (request.transformResponse as any[]).push(newTransformRespons);
+
+        //console.log(request);
 
         return self.$http.request(request);
       };

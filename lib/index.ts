@@ -17,6 +17,7 @@ export {
 	subscribeObservable,
 	resolveObservable,
 	IUnpackObservableData,
+	IUnpackAxiosObservableData,
 	Observer,
 	PartialObserver,
 } from './util';

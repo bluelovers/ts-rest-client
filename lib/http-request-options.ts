@@ -1,9 +1,50 @@
-import { NamedValues } from './named-values';
+import { NamedValues, StringMap } from './named-values';
 import { IEnumRestClientMetadataMethod } from './rest-client';
 import { standardQueryEncoding } from './util';
+import { IAxiosRequestConfig } from './axios';
 
 /** HTTP Method to be used in the request. */
 export type HttpMethod = IEnumRestClientMetadataMethod;
+
+export interface IHttpRequestHeaders extends StringMap<any>
+{
+	Accepts?: string | 'application/json',
+	'Accept-Language'?: string,
+	'Accept-Encoding'?: string,
+	'Referer'?: string,
+	'Connection'?: string,
+	'Upgrade-Insecure-Requests'?: string,
+	'If-Modified-Since'?: string,
+	'If-None-Match'?: string,
+	'Content-Type'?: string | 'application/json',
+	'User-Agent'?: string,
+	'Cache-Control'?: string,
+	'Authorization'?: string,
+	'Cookie'?: string,
+	'Content-Length'?: string,
+	'Date'?: string,
+	'Max-Forwards'?: number,
+	'Origin'?: string,
+	'Proxy-Authorization'?: string,
+	'Range'?: string,
+	'X-Requested-With'?: string,
+	'X-Forwarded-For'?: string,
+	'X-Forwarded-Host'?: string,
+	'X-HTTP-Method-Override'?: string,
+	'X-Att-Deviceid'?: string,
+	'X-Wap-Profile'?: string,
+	'Access-Control-Allow-Origin'?: string | '*',
+	'Allow'?: string,
+}
+
+export interface IHttpRequestOptions
+{
+	url: string;
+	method: IEnumRestClientMetadataMethod;
+	body: any;
+	headers: IHttpRequestHeaders;
+	params: Record<string, any>;
+}
 
 /**
  * HTTP Request options.
@@ -19,12 +60,12 @@ export class HttpRequestOptions
 		readonly url: string,
 		readonly method: HttpMethod,
 		readonly body: any = null,
-		readonly headers: NamedValues = null,
+		readonly headers: NamedValues<IHttpRequestHeaders> = null,
 		readonly params: NamedValues<Record<string, any>> = null,
 	)
 	{
 		const empty = new NamedValues();
-		this.headers = new NamedValues((headers || empty).values);
+		this.headers = new NamedValues((headers || empty as any).values);
 		this.params = new NamedValues((params || empty).values);
 
 		if (!this.headers.contains('Content-Type'))
@@ -38,7 +79,7 @@ export class HttpRequestOptions
 		}
 	}
 
-	toValue()
+	toValue(): IHttpRequestOptions
 	{
 		return {
 			url: this.url,
@@ -105,6 +146,17 @@ export class HttpRequestOptions
 		const separator = queryIndex < 0 ? '?' : (queryIndex < this.url.length - 1 ? '&' : '');
 
 		return `${this.url}${separator}${paramsString}`;
+	}
+
+	static toValue(options: IAxiosRequestConfig | HttpRequestOptions | IHttpRequestOptions)
+	{
+		if (options instanceof HttpRequestOptions)
+		{
+			// @ts-ignore
+			options = options.toValue()
+		}
+
+		return options
 	}
 }
 

@@ -1,4 +1,4 @@
-import { HttpMethod, HttpRequestOptions } from './http-request-options';
+import { HttpMethod, HttpRequestOptions, IHttpRequestHeaders } from './http-request-options';
 import { HttpService } from './http-service';
 import { NamedValues, StringMap } from './named-values';
 import 'reflect-metadata';
@@ -40,14 +40,14 @@ export declare abstract class RestClient<H extends HttpService = HttpService> {
     /**
      * Returns the default HTTP headers attached to each request.
      */
-    [SymbolDefaultHeaders](): StringMap;
+    [SymbolDefaultHeaders](): IHttpRequestHeaders;
 }
 /**
  * Sets the default HTTP headers attached to each request to the REST API.
  * Intended to use as a decorator: @DefaultHeaders({'Header': 'value', 'Header2': 'value'}
  * @param headers   The headers in key-value pairs.
  */
-export declare function DefaultHeaders(headers: StringMap): (Target: any) => any;
+export declare function DefaultHeaders(headers: IHttpRequestHeaders): (Target: any) => any;
 /**
  * Sets the base URL of the REST API.
  * Intended to use as a decorator: @BaseUrl("http://...")

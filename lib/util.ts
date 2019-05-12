@@ -25,7 +25,7 @@ export function urlNormalize(input: string | URL): string
 		throw new TypeError(`input not string | URL`)
 	}
 
-	return input.href
+	return input.href;
 }
 
 export function urlResolve(input: string, base?: string | URL): string
@@ -40,7 +40,7 @@ export function urlResolve(input: string, base?: string | URL): string
 		return urlNormalize(input)
 	}
 
-	return _url_resolve(urlNormalize(base), input);
+	return urlNormalize(_url_resolve(urlNormalize(base), input));
 }
 
 export const enum EnumRestClientMetadata
@@ -77,7 +77,9 @@ export function standardQueryEncoding(v: string): string
 	return encodeURIComponent(v);
 }
 
-export function createObserver<T, E extends Error | any = Error>(observer?: PartialObserver<T>, log = console): Observer<T>
+export function createObserver<T, E extends Error | any = Error>(observer?: PartialObserver<T>,
+	log = console,
+): Observer<T>
 {
 	return {
 		next(data: T)
@@ -97,20 +99,32 @@ export function createObserver<T, E extends Error | any = Error>(observer?: Part
 }
 
 export type IUnpackObservableData<T extends Rxjs.Observable<any>> =
-	T extends IAxiosObservable<infer U> ? U
-	: T extends Rxjs.Observable<infer U> ? U
+	T extends Rxjs.Observable<infer U> ? U
 		: unknown
-;
+	;
 
-export function subscribeObservable<T extends Rxjs.Observable<any>>(ob: T)
+export type IUnpackAxiosObservableData<T extends Rxjs.Observable<any>> =
+	T extends IAxiosObservable<infer U> ? U
+		: T extends Rxjs.Observable<infer U> ? U
+		: unknown
+	;
+
+export function subscribeObservable<T extends Rxjs.Observable<any>>(ob: T,
+	observer?: PartialObserver<IUnpackObservableData<T>>,
+)
 {
-	return ob.subscribe(createObserver<IUnpackObservableData<T>>());
+	return ob.subscribe(createObserver<IUnpackObservableData<T>>(observer));
 }
 
-export function resolveObservable<T extends Rxjs.Observable<any>>(ob: T)
+export function resolveObservable<T extends Rxjs.Observable<any>>(ob: T,
+	observer?: PartialObserver<IUnpackObservableData<T>>,
+)
 {
 	return Bluebird.resolve(ob)
-		.then(subscribeObservable)
+		.then(function (ob)
+		{
+			return subscribeObservable(ob, observer)
+		})
 		;
 }
 
