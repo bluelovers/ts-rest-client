@@ -8,6 +8,7 @@ import { setupCache } from 'axios-cache-adapter';
 import { AxiosObservable as IAxiosObservable } from 'axios-observable/dist/axios-observable.interface';
 import { AxiosRequestConfig as IAxiosRequestConfig, AxiosResponse } from 'axios';
 import { IRestClientOptions, RestClient } from '../rest-client';
+import UserAgent = require('user-agents');
 
 export type IAxios = typeof Axios;
 
@@ -56,12 +57,18 @@ export function createAxios(config: IRequestConfig = {})
 		{
 			cache = setupCache({
 				maxAge: 15 * 60 * 1000,
+				exclude: {
+					query: false,
+				},
 			})
 		}
 		else if (t === 'number')
 		{
 			cache = setupCache({
 				maxAge: t,
+				exclude: {
+					query: false,
+				},
 			})
 		}
 		else if (!('adapter' in cache && 'config' in cache && 'store' in cache))
@@ -133,6 +140,9 @@ export function createAxios(config: IRequestConfig = {})
 
 	delete config.cache;
 
+	config.headers = config.headers || {};
+	config.headers['User-Agent'] = new UserAgent().toString();
+
 	return Axios.create(config)
 }
 
@@ -146,14 +156,13 @@ export function getOptionsFromAxiosResponse<T extends AxiosResponse<any>>(ret: T
 	{
 
 	}
-	return null;
 }
 
 export function infoFromAxiosResponse<T extends AxiosResponse<any>>(ret: T)
 {
 	let path: string = ret.request.path;
-	let responseUrl: string = ret.request.res.responseUrl;
-	let redirects: string = ret.request.res.redirects;
+	let responseUrl: string = ret.request.res && ret.request.res.responseUrl;
+	let redirects: string = ret.request.res && ret.request.res.redirects;
 
 	let status = ret.status;
 	let statusText = ret.statusText;

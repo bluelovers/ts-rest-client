@@ -1,17 +1,19 @@
+import 'reflect-metadata';
 // tslint:disable:ban-types
 import { HttpMethod, HttpRequestOptions, IHttpRequestHeaders } from './http-request-options';
 import { HttpService } from './http-service';
 import { NamedValues, StringMap } from './named-values';
-import 'reflect-metadata';
+
 import {
-  EnumRestClientMetadata,
-  SymbolBaseUrl,
-  SymbolDefaultHeaders,
-  SymbolHttpClient,
-  SymbolRequestInterceptor, urlNormalize,
-  urlResolve,
+	EnumRestClientMetadata,
+	getThisTypeMetadata,
+	SymbolBaseUrl,
+	SymbolDefaultHeaders,
+	SymbolHttpClient,
+	SymbolRequestInterceptor,
+	urlResolve,
 } from './util';
-import { IAxiosRequestConfig, IAxiosObservable as Observable } from './axios';
+import { IAxiosObservable as Observable, IAxiosRequestConfig } from './axios';
 
 interface Parameter<T = any> {
   key: string;
@@ -87,12 +89,7 @@ export abstract class RestClient<H extends HttpService = HttpService> {
  * @param headers   The headers in key-value pairs.
  */
 export function DefaultHeaders(headers: IHttpRequestHeaders) {
-  return function (Target: any) {
-
-    setClassMetadata(EnumRestClientMetadata.DEFAULT_HEADERS, headers, Target);
-
-    return Target;
-  };
+  return Reflect.metadata(EnumRestClientMetadata.DEFAULT_HEADERS, headers);
 }
 
 /**
@@ -101,29 +98,11 @@ export function DefaultHeaders(headers: IHttpRequestHeaders) {
  * @param url   the base URL.
  */
 export function BaseUrl(url: string | URL) {
-  return function (Target: any) {
-    setClassMetadata(EnumRestClientMetadata.BASE_URL, urlNormalize(url), Target);
-    return Target;
-  };
-}
-
-export function getThisTypeMetadata(metadataKey: string, target: ThisType<any>)
-{
-  return Reflect.getMetadata(metadataKey, Reflect.getPrototypeOf(target))
+	return Reflect.metadata(EnumRestClientMetadata.BASE_URL, url)
 }
 
 export type IClassWithPrototype<T extends object = object> = object & {
   prototype: T;
-}
-
-export function getClassMetadata(metadataKey: string, target: IClassWithPrototype)
-{
-  return Reflect.getMetadata(metadataKey, target.prototype)
-}
-
-export function setClassMetadata(metadataKey: string, metadataValue: any, target: IClassWithPrototype)
-{
-  Reflect.defineMetadata(metadataKey, metadataValue, target.prototype);
 }
 
 export type IEnumRestClientMetadataParam = EnumRestClientMetadata.PARAM_PATH | EnumRestClientMetadata.PARAM_QUERY | EnumRestClientMetadata.PARAM_BODY | EnumRestClientMetadata.PARAM_HEADER
@@ -162,21 +141,17 @@ export function setRestClientMethodMetadata<RC extends RestClient>(metadataKey: 
 }
 
 function paramBuilder(paramName: IEnumRestClientMetadataParam) {
-  return function<D extends any>(key: string, defaultValue?: D) {
-    return function<RC extends RestClient>(target: RC, propertyKey: symbol | string, parameterIndex: number) {
+  return function(key: string, defaultValue?: any) {
+    return function<RC extends RestClient>(target: RC, propertyKey: any, parameterIndex: number) {
       //const metadataKey = `${String(propertyKey)}_${paramName}_parameters`;
-      const paramObj: Parameter<D> = {
+      const paramObj: Parameter = {
         key,
         parameterIndex,
         defaultValue,
       };
 
-      let arr = getRestClientMethodMetadata(paramName, target, propertyKey);
-      if (Array.isArray(arr)) {
-        arr.push(paramObj);
-      } else {
-        arr = [paramObj];
-      }
+      let arr = getRestClientMethodMetadata(paramName, target, propertyKey) || [];
+      arr.push(paramObj);
       setRestClientMethodMetadata(paramName, target, propertyKey, arr);
     };
   };

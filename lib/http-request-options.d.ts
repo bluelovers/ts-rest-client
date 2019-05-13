@@ -67,6 +67,6 @@ export declare class HttpRequestOptions {
      * Gets the request URL including eventual query string.
      */
     getUrl(): string;
-    static toValue(options: IAxiosRequestConfig | HttpRequestOptions | IHttpRequestOptions): IHttpRequestOptions | IAxiosRequestConfig;
+    static toValue(options: IAxiosRequestConfig | HttpRequestOptions | IHttpRequestOptions): IAxiosRequestConfig | IHttpRequestOptions;
 }
 export default HttpRequestOptions;

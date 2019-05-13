@@ -4,11 +4,12 @@
 
 import 'reflect-metadata';
 import { resolve as _url_resolve } from 'url';
-import Bluebird = require('bluebird');
-import util = require('util');
 import { IAxiosObservable } from './axios';
 import { Observer, PartialObserver } from 'rxjs';
+import Bluebird = require('bluebird');
+import util = require('util');
 import Rxjs = require('rxjs');
+import { IClassWithPrototype } from './rest-client';
 
 export { Observer, PartialObserver }
 
@@ -129,3 +130,23 @@ export function resolveObservable<T extends Rxjs.Observable<any>>(ob: T,
 }
 
 export default exports as typeof import('./util');
+
+export function getThisTypeMetadata<T extends any>(metadataKey: any, target: ThisType<any>): T
+{
+	return Reflect.getMetadata(metadataKey, Reflect.getPrototypeOf(target).constructor)
+}
+
+export function setThisTypeMetadata(metadataKey: any, metadataValue: any, target: ThisType<any>)
+{
+	return Reflect.defineMetadata(metadataKey, metadataValue, Reflect.getPrototypeOf(target).constructor)
+}
+
+export function getClassMetadata<T extends any>(metadataKey: any, target: IClassWithPrototype): T
+{
+	return Reflect.getMetadata(metadataKey, target)
+}
+
+export function setClassMetadata(metadataKey: any, metadataValue: any, target: IClassWithPrototype)
+{
+	return Reflect.defineMetadata(metadataKey, metadataValue, target)
+}

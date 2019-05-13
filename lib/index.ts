@@ -30,3 +30,4 @@ export {
 } from './axios';
 
 export default exports as typeof import('./index');
+

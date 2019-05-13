@@ -38,7 +38,8 @@
     "axios-observable": "^1.0.7",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.2",
-    "rxjs-compat": "^6.5.2"
+    "rxjs-compat": "^6.5.2",
+    "user-agents": "^1.0.254"
   },
   "devDependencies": {
     "@bluelovers/tsconfig": "^1.0.3",

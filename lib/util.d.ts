@@ -2,10 +2,11 @@
  * Created by user on 2019/5/12.
  */
 import 'reflect-metadata';
-import Bluebird = require('bluebird');
 import { IAxiosObservable } from './axios';
 import { Observer, PartialObserver } from 'rxjs';
+import Bluebird = require('bluebird');
 import Rxjs = require('rxjs');
+import { IClassWithPrototype } from './rest-client';
 export { Observer, PartialObserver };
 export declare type IBluebird = typeof Bluebird;
 export declare function urlNormalize(input: string | URL): string;
@@ -39,3 +40,7 @@ export declare function subscribeObservable<T extends Rxjs.Observable<any>>(ob: 
 export declare function resolveObservable<T extends Rxjs.Observable<any>>(ob: T, observer?: PartialObserver<IUnpackObservableData<T>>): Bluebird<Rxjs.Subscription>;
 declare const _default: typeof import("./util");
 export default _default;
+export declare function getThisTypeMetadata<T extends any>(metadataKey: any, target: ThisType<any>): T;
+export declare function setThisTypeMetadata(metadataKey: any, metadataValue: any, target: ThisType<any>): void;
+export declare function getClassMetadata<T extends any>(metadataKey: any, target: IClassWithPrototype): T;
+export declare function setClassMetadata(metadataKey: any, metadataValue: any, target: IClassWithPrototype): void;
